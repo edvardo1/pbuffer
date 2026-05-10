@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define GROWTH_ADDITIVE_FACTOR 32
 #define person_n (((int *)pBuffer)[0])
 #define len      (((int *)pBuffer)[1])
 #define capacity (((int *)pBuffer)[2])
@@ -15,16 +16,26 @@
 void *pBuffer = NULL;
 
 void grow_int( void ) {
-	if (len + 4 >= capacity) {
-		capacity += 32;
+	if (len + sizeof(int) >= capacity) {
+		capacity += GROWTH_ADDITIVE_FACTOR;
 		pBuffer = realloc(pBuffer, capacity);
 	}
 }
 
 void grow_byte( void ) {
 	if (len + 1 >= capacity) {
-		capacity += 32;
+		capacity += GROWTH_ADDITIVE_FACTOR;
 		pBuffer = realloc(pBuffer, capacity);
+	}
+}
+
+void ungrow( void ) {
+	tmp_1 = (len + GROWTH_ADDITIVE_FACTOR - 1);
+	tmp_1 /= GROWTH_ADDITIVE_FACTOR;
+	tmp_1 *= GROWTH_ADDITIVE_FACTOR;
+	if ( tmp_1 < capacity && len <= tmp_1 ) {
+		capacity = tmp_1;
+		pBuffer = realloc(pBuffer, tmp_1);
 	}
 }
 
@@ -32,7 +43,7 @@ void addPerson( void ) {
 	person_n++;
 	tmp_0 = len;
 
-	while (tmp_0 % 4 != 0) {
+	while (tmp_0 % sizeof(int) != 0) {
 		grow_byte();
 		tmp_0++;
 		len++;
@@ -40,8 +51,8 @@ void addPerson( void ) {
 	grow_int();
 	tmp_1 = tmp_0;
 
-	tmp_0 += 4;
-	len += 4;
+	tmp_0 += sizeof(int);
+	len += sizeof(int);
 
 	printf("digite o nome: ");
 	for (;;) {
@@ -77,7 +88,7 @@ void addPerson( void ) {
 void removePerson( void ) {
 	tmp_3 = len; /* base */
 
-	printf("digite um nome para buscar: ");
+	printf("digite um nome para remover: ");
 
 	for (;;) {
 		grow_byte();
@@ -95,13 +106,13 @@ void removePerson( void ) {
 	tmp_1 = OFFSET;
 	tmp_2 = 0;
 
-	for (;;) {
+	while (tmp_0 < person_n) {
 		/* alignment */
-		while (tmp_1 % 4 != 0) {
+		while (tmp_1 % sizeof(int) != 0) {
 			tmp_1++;
 		}
 
-		tmp_1 += 4;
+		tmp_1 += sizeof(int);
 
 		tmp_2 = 0;
 		for (;;) {
@@ -109,18 +120,30 @@ void removePerson( void ) {
 				break;
 			}
 			if (((char *)pBuffer)[tmp_3 + tmp_2] == '\0') {
+				printf("WOW FOUND!\n");
 				break;
 			}
 			tmp_2 += 1;
 		}
 
 		if (((char *)pBuffer)[tmp_3 + tmp_2] == ((char *)pBuffer)[tmp_1 + tmp_2]) {
+			printf("FOUND!\n");
 			tmp_0 = 1;
 			break;
+		} else {
+			/* not this one, skip it */
+			while (((char *)pBuffer)[tmp_1] != '\0') {
+				tmp_1 += 1;
+			}
+			tmp_1 += 1;
+			while (((char *)pBuffer)[tmp_1] != '\0') {
+				tmp_1 += 1;
+			}
 		}
 
 		tmp_0 += 1;
 		if (tmp_0 >= person_n) {
+			printf("NOT FOUND!\n");
 			tmp_0 = 0;
 			break;
 		}
@@ -128,7 +151,7 @@ void removePerson( void ) {
 	len = tmp_3;
 
 	if (tmp_0) { /* found someone */
-		tmp_0 = tmp_1 - 4;
+		tmp_0 = tmp_1 - sizeof(int);
 		tmp_2 = 0;
 
 		while (((char *)pBuffer)[tmp_1 + tmp_2] != '\0') { /* skip name */
@@ -138,13 +161,27 @@ void removePerson( void ) {
 		while (((char *)pBuffer)[tmp_1 + tmp_2] != '\0') { /* skip email */
 			tmp_2 += 1;
 		}
-		tmp_3 = len - tmp_2; /* new len */
-		while (tmp_2 != len) {
-			((char *)pBuffer)[tmp_1] = ((char *)pBuffer)[tmp_2];
-			tmp_1 += 1;
+
+		/* alignment */
+		while ((tmp_1 + tmp_2) % sizeof(int) != 0) {
 			tmp_2 += 1;
 		}
+
+		tmp_3 = len - tmp_2; /* new len */
+		tmp_1 += tmp_2;
+
+		printf("\n\nREMOVING\n");
+		printf("tmp_0: %02lx\n", tmp_0 - OFFSET);
+		printf("tmp_1: %02lx\n", tmp_1 - OFFSET);
+
+		while (tmp_1 != len) {
+			((char *)pBuffer)[tmp_0] = ((char *)pBuffer)[tmp_1];
+			tmp_0 += 1;
+			tmp_1 += 1;
+		}
 		len = tmp_3;
+
+		ungrow();
 	}
 }
 
@@ -171,11 +208,11 @@ void searchPerson( void ) {
 
 	while (tmp_0 < person_n) {
 		/* alignment */
-		while (tmp_1 % 4 != 0) {
+		while (tmp_1 % sizeof(int) != 0) {
 			tmp_1++;
 		}
 
-		tmp_1 += 4;
+		tmp_1 += sizeof(int);
 
 		tmp_2 = 0;
 		for (;;) {
@@ -190,7 +227,7 @@ void searchPerson( void ) {
 
 		if (((char *)pBuffer)[tmp_3 + tmp_2] == ((char *)pBuffer)[tmp_1 + tmp_2]) {
 			printf("uma pessoa foi achada:\n");
-			tmp_2 = tmp_1 - 4; /* age index */
+			tmp_2 = tmp_1 - sizeof(int); /* age index */
 			tmp_1 += -6 + printf(
 				"nome: %s\n",
 				&((char *)pBuffer)[tmp_1]
@@ -201,6 +238,15 @@ void searchPerson( void ) {
 				&((char *)pBuffer)[tmp_1]
 			);
 			break;
+		} else {
+			/* not this one, skip it */
+			while (((char *)pBuffer)[tmp_1] != '\0') {
+				tmp_1 += 1;
+			}
+			tmp_1 += 1;
+			while (((char *)pBuffer)[tmp_1] != '\0') {
+				tmp_1 += 1;
+			}
 		}
 
 		tmp_0 += 1;
@@ -215,12 +261,12 @@ void listPeople( void ) {
 
 	while (tmp_0 < person_n) {
 		/* alignment */
-		while (tmp_1 % 4 != 0) {
+		while (tmp_1 % sizeof(int) != 0) {
 			tmp_1++;
 		}
 
 		tmp_2 = tmp_1;
-		tmp_1 += 4;
+		tmp_1 += sizeof(int);
 
 		tmp_1 += -6 + printf(
 			"nome: %s\n",
@@ -264,7 +310,7 @@ int main() {
 				addPerson();
 				break;
 			case 2:
-				//removePerson();
+				removePerson();
 				break;
 			case 3:
 				searchPerson();
