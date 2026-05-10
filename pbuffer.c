@@ -70,7 +70,7 @@ void AddPerson( void ) {
 	scanf( "%d", (int *)&( (char *) pBuffer )[TMP_1] );
 	assert( fgetc( stdin ) == '\n' );
 
-	printf("digite o e-mail: ");
+	printf( "digite o e-mail: " );
 	for (;;) {
 		GrowByte();
 		( (char *) pBuffer )[TMP_0] = fgetc( stdin );
