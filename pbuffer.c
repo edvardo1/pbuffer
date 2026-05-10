@@ -196,7 +196,7 @@ void searchPerson( void ) {
 				&((char *)pBuffer)[tmp_1]
 			);
 			printf("idade: %d\n", *(int *)&((char *)pBuffer)[tmp_2]);
-			tmp_1 += -6 + printf(
+			tmp_1 += -7 + printf(
 				"email: %s\n",
 				&((char *)pBuffer)[tmp_1]
 			);
