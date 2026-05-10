@@ -1,0 +1,3 @@
+#!/bin/sh
+
+gcc -Wall -Werror -o pbuffer pbuffer.c && ./pbuffer < test_input
