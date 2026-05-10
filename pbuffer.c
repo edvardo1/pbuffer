@@ -74,6 +74,80 @@ void addPerson( void ) {
 	}
 }
 
+void removePerson( void ) {
+	tmp_3 = len; /* base */
+
+	printf("digite um nome para buscar: ");
+
+	for (;;) {
+		grow_byte();
+		((char *)pBuffer)[len] = fgetc(stdin);
+		len++;
+		if (((char *)pBuffer)[len - 1] == '\n') {
+			((char *)pBuffer)[len - 1] = '\0';
+			break;
+		}
+	}
+
+	printf("procurando...\n");
+
+	tmp_0 = 0;
+	tmp_1 = OFFSET;
+	tmp_2 = 0;
+
+	for (;;) {
+		/* alignment */
+		while (tmp_1 % 4 != 0) {
+			tmp_1++;
+		}
+
+		tmp_1 += 4;
+
+		tmp_2 = 0;
+		for (;;) {
+			if (((char *)pBuffer)[tmp_3 + tmp_2] != ((char *)pBuffer)[tmp_1 + tmp_2]) {
+				break;
+			}
+			if (((char *)pBuffer)[tmp_3 + tmp_2] == '\0') {
+				break;
+			}
+			tmp_2 += 1;
+		}
+
+		if (((char *)pBuffer)[tmp_3 + tmp_2] == ((char *)pBuffer)[tmp_1 + tmp_2]) {
+			tmp_0 = 1;
+			break;
+		}
+
+		tmp_0 += 1;
+		if (tmp_0 >= person_n) {
+			tmp_0 = 0;
+			break;
+		}
+	}
+	len = tmp_3;
+
+	if (tmp_0) { /* found someone */
+		tmp_0 = tmp_1 - 4;
+		tmp_2 = 0;
+
+		while (((char *)pBuffer)[tmp_1 + tmp_2] != '\0') { /* skip name */
+			tmp_2 += 1;
+		}
+		tmp_2 += 1;
+		while (((char *)pBuffer)[tmp_1 + tmp_2] != '\0') { /* skip email */
+			tmp_2 += 1;
+		}
+		tmp_3 = len - tmp_2; /* new len */
+		while (tmp_2 != len) {
+			((char *)pBuffer)[tmp_1] = ((char *)pBuffer)[tmp_2];
+			tmp_1 += 1;
+			tmp_2 += 1;
+		}
+		len = tmp_3;
+	}
+}
+
 void searchPerson( void ) {
 	tmp_3 = len; /* base */
 
@@ -136,7 +210,7 @@ void searchPerson( void ) {
 
 void listPeople( void ) {
 	tmp_0 = 0;
-	tmp_1 = 0;
+	tmp_1 = OFFSET;
 	tmp_2 = 0;
 
 	while (tmp_0 < person_n) {
@@ -144,22 +218,23 @@ void listPeople( void ) {
 		while (tmp_1 % 4 != 0) {
 			tmp_1++;
 		}
+
 		tmp_2 = tmp_1;
 		tmp_1 += 4;
 
 		tmp_1 += -6 + printf(
 			"nome: %s\n",
-			&((char *)pBuffer)[OFFSET + tmp_1]
+			&((char *)pBuffer)[tmp_1]
 		);
 
 		printf(
 			"idade: %d\n",
-			*(int *)&((char *)pBuffer)[OFFSET + tmp_2]
+			*(int *)&((char *)pBuffer)[tmp_2]
 		);
 
-		tmp_1 += -6 + printf(
+		tmp_1 += -7 + printf(
 			"email: %s\n",
-			&((char *)pBuffer)[OFFSET + tmp_1]
+			&((char *)pBuffer)[tmp_1]
 		);
 		tmp_0 += 1;
 	}
@@ -204,8 +279,13 @@ int main() {
 				break;
 		}
 
+		printf("\n");
 		printf("OFFSET: %ld\n", OFFSET);
 		printf("len: %d\n", len);
+
+		printf("..  0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f\n");
+		int j = 1;
+		printf("00 ");
 		for (int i = OFFSET; i < capacity; i++) {
 			if (i >= len) {
 				printf("\x1b[37m");
@@ -219,17 +299,19 @@ int main() {
 			}
 
 			if (((char *)pBuffer)[i] < '!') {
-				printf("%02x ", ((char *)pBuffer)[i]);
+				printf("%02x", ((char *)pBuffer)[i]);
+				printf("\x1b[0m ");
 			} else {
-				printf("_%c ", ((char *)pBuffer)[i]);
+				printf("_%c", ((char *)pBuffer)[i]);
+				printf("\x1b[0m ");
 			}
 
 			if ((i - OFFSET) % 16 == 15) {
-				printf("\x1b[0m\n");
+				printf("\x1b[0m\n%02x ", j++);
 			}
 		}
 		printf("\x1b[0m");
-		printf("\n");
+		printf("\n\n");
 	}
 	return 0;
 }
