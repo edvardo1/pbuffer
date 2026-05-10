@@ -3,320 +3,315 @@
 #include <stdlib.h>
 
 #define GROWTH_ADDITIVE_FACTOR 32
-#define person_n (((int *)pBuffer)[0])
-#define len      (((int *)pBuffer)[1])
-#define capacity (((int *)pBuffer)[2])
-#define tmp_0    (((int *)pBuffer)[3])
-#define tmp_1    (((int *)pBuffer)[4])
-#define tmp_2    (((int *)pBuffer)[5])
-#define tmp_3    (((int *)pBuffer)[6])
-#define OFFSET  (8 * sizeof(int))
-#define OFFSETI (8)
+#define PERSON_N (((int *)pBuffer)[0])
+#define LEN      (((int *)pBuffer)[1])
+#define CAPACITY (((int *)pBuffer)[2])
+#define TMP_0    (((int *)pBuffer)[3])
+#define TMP_1    (((int *)pBuffer)[4])
+#define TMP_2    (((int *)pBuffer)[5])
+#define TMP_3    (((int *)pBuffer)[6])
+#define OFFSET  (8 * sizeof( int ))
 
 void *pBuffer = NULL;
 
-void grow_int( void ) {
-	if (len + sizeof(int) >= capacity) {
-		capacity += GROWTH_ADDITIVE_FACTOR;
-		pBuffer = realloc(pBuffer, capacity);
+void GrowInt( void ) {
+	if ( LEN + sizeof( int ) >= CAPACITY ) {
+		CAPACITY += GROWTH_ADDITIVE_FACTOR;
+		pBuffer = realloc( pBuffer, CAPACITY );
 	}
 }
 
-void grow_byte( void ) {
-	if (len + 1 >= capacity) {
-		capacity += GROWTH_ADDITIVE_FACTOR;
-		pBuffer = realloc(pBuffer, capacity);
+void GrowByte( void ) {
+	if ( LEN + 1 >= CAPACITY ) {
+		CAPACITY += GROWTH_ADDITIVE_FACTOR;
+		pBuffer = realloc( pBuffer, CAPACITY );
 	}
 }
 
-void ungrow( void ) {
-	tmp_1 = (len + GROWTH_ADDITIVE_FACTOR - 1);
-	tmp_1 /= GROWTH_ADDITIVE_FACTOR;
-	tmp_1 *= GROWTH_ADDITIVE_FACTOR;
-	if ( tmp_1 < capacity && len <= tmp_1 ) {
-		capacity = tmp_1;
-		pBuffer = realloc(pBuffer, tmp_1);
+void Ungrow( void ) {
+	TMP_1 = (LEN + GROWTH_ADDITIVE_FACTOR - 1);
+	TMP_1 /= GROWTH_ADDITIVE_FACTOR;
+	TMP_1 *= GROWTH_ADDITIVE_FACTOR;
+	if ( TMP_1 < CAPACITY && LEN <= TMP_1 ) {
+		CAPACITY = TMP_1;
+		pBuffer = realloc( pBuffer, TMP_1 );
 	}
 }
 
-void addPerson( void ) {
-	person_n++;
-	tmp_0 = len;
+void AddPerson( void ) {
+	PERSON_N++;
+	TMP_0 = LEN;
 
-	while (tmp_0 % sizeof(int) != 0) {
-		grow_byte();
-		tmp_0++;
-		len++;
+	while ( TMP_0 % sizeof( int ) != 0 ) {
+		GrowByte();
+		TMP_0++;
+		LEN++;
 	}
-	grow_int();
-	tmp_1 = tmp_0;
+	GrowInt();
+	TMP_1 = TMP_0;
 
-	tmp_0 += sizeof(int);
-	len += sizeof(int);
+	TMP_0 += sizeof( int );
+	LEN += sizeof( int );
 
-	printf("digite o nome: ");
+	printf( "digite o nome: " );
 	for (;;) {
-		grow_byte();
-		((char *)pBuffer)[tmp_0] = fgetc(stdin);
-		len++;
-		tmp_0++;
+		GrowByte();
+		( (char *) pBuffer )[TMP_0] = fgetc(stdin);
+		LEN++;
+		TMP_0++;
 
-		if (((char *)pBuffer)[tmp_0 - 1] == '\n') {
-			((char *)pBuffer)[tmp_0 - 1] = '\0';
+		if ( ( (char *) pBuffer )[TMP_0 - 1] == '\n' ) {
+			( (char *) pBuffer )[TMP_0 - 1] = '\0';
 			break;
 		}
 	}
 
-	printf("digite a idade: ");
-	scanf("%d", (int *)&((char *)pBuffer)[tmp_1]);
-	assert(fgetc(stdin) == '\n');
+	printf( "digite a idade: " );
+	scanf( "%d", (int *)&( (char *) pBuffer )[TMP_1] );
+	assert( fgetc( stdin ) == '\n' );
 
 	printf("digite o e-mail: ");
 	for (;;) {
-		grow_byte();
-		((char *)pBuffer)[tmp_0] = fgetc(stdin);
-		len++;
-		tmp_0++;
+		GrowByte();
+		( (char *) pBuffer )[TMP_0] = fgetc( stdin );
+		LEN++;
+		TMP_0++;
 
-		if (((char *)pBuffer)[tmp_0 - 1] == '\n') {
-			((char *)pBuffer)[tmp_0 - 1] = '\0';
+		if ( ( (char *) pBuffer )[TMP_0 - 1] == '\n' ) {
+			( (char *) pBuffer )[TMP_0 - 1] = '\0';
 			break;
 		}
 	}
 }
 
-void removePerson( void ) {
-	tmp_3 = len; /* base */
+void RemovePerson( void ) {
+	TMP_3 = LEN; /* base */
 
-	printf("digite um nome para remover: ");
+	printf( "digite um nome para remover: " );
 
 	for (;;) {
-		grow_byte();
-		((char *)pBuffer)[len] = fgetc(stdin);
-		len++;
-		if (((char *)pBuffer)[len - 1] == '\n') {
-			((char *)pBuffer)[len - 1] = '\0';
+		GrowByte();
+		( (char *) pBuffer )[LEN] = fgetc( stdin );
+		LEN++;
+		if ( ( (char *) pBuffer )[LEN - 1] == '\n' ) {
+			( (char *) pBuffer )[LEN - 1] = '\0';
 			break;
 		}
 	}
 
-	printf("procurando...\n");
+	printf( "procurando...\n" );
 
-	tmp_0 = 0;
-	tmp_1 = OFFSET;
-	tmp_2 = 0;
+	TMP_0 = 0;
+	TMP_1 = OFFSET;
+	TMP_2 = 0;
 
-	while (tmp_0 < person_n) {
+	while ( TMP_0 < PERSON_N ) {
 		/* alignment */
-		while (tmp_1 % sizeof(int) != 0) {
-			tmp_1++;
+		while ( TMP_1 % sizeof( int ) != 0 ) {
+			TMP_1++;
 		}
 
-		tmp_1 += sizeof(int);
+		TMP_1 += sizeof( int );
 
-		tmp_2 = 0;
+		TMP_2 = 0;
 		for (;;) {
-			if (((char *)pBuffer)[tmp_3 + tmp_2] != ((char *)pBuffer)[tmp_1 + tmp_2]) {
+			if ( ( (char *) pBuffer )[TMP_3 + TMP_2] != ( (char *) pBuffer )[TMP_1 + TMP_2] ) {
 				break;
 			}
-			if (((char *)pBuffer)[tmp_3 + tmp_2] == '\0') {
+			if ( ( (char *) pBuffer )[TMP_3 + TMP_2] == '\0' ) {
 				printf("WOW FOUND!\n");
 				break;
 			}
-			tmp_2 += 1;
+			TMP_2 += 1;
 		}
 
-		if (((char *)pBuffer)[tmp_3 + tmp_2] == ((char *)pBuffer)[tmp_1 + tmp_2]) {
+		if ( ( (char *) pBuffer )[TMP_3 + TMP_2] == ( (char *) pBuffer )[TMP_1 + TMP_2] ) {
 			printf("FOUND!\n");
-			tmp_0 = 1;
+			TMP_0 = 1;
 			break;
 		} else {
 			/* not this one, skip it */
-			while (((char *)pBuffer)[tmp_1] != '\0') {
-				tmp_1 += 1;
+			while ( ( (char *) pBuffer )[TMP_1] != '\0' ) {
+				TMP_1 += 1;
 			}
-			tmp_1 += 1;
-			while (((char *)pBuffer)[tmp_1] != '\0') {
-				tmp_1 += 1;
+			TMP_1 += 1;
+			while ( ( (char *) pBuffer )[TMP_1] != '\0' ) {
+				TMP_1 += 1;
 			}
 		}
 
-		tmp_0 += 1;
-		if (tmp_0 >= person_n) {
+		TMP_0 += 1;
+		if ( TMP_0 >= PERSON_N ) {
 			printf("NOT FOUND!\n");
-			tmp_0 = 0;
+			TMP_0 = 0;
 			break;
 		}
 	}
-	len = tmp_3;
+	LEN = TMP_3;
 
-	if (tmp_0) { /* found someone */
-		tmp_0 = tmp_1 - sizeof(int);
-		tmp_2 = 0;
+	if ( TMP_0 ) { /* found someone */
+		TMP_0 = TMP_1 - sizeof( int );
+		TMP_2 = 0;
 
-		while (((char *)pBuffer)[tmp_1 + tmp_2] != '\0') { /* skip name */
-			tmp_2 += 1;
+		while ( ( (char *) pBuffer )[TMP_1 + TMP_2] != '\0' ) { /* skip name */
+			TMP_2 += 1;
 		}
-		tmp_2 += 1;
-		while (((char *)pBuffer)[tmp_1 + tmp_2] != '\0') { /* skip email */
-			tmp_2 += 1;
+		TMP_2 += 1;
+		while ( ( (char *) pBuffer )[TMP_1 + TMP_2] != '\0' ) { /* skip email */
+			TMP_2 += 1;
 		}
 
 		/* alignment */
-		while ((tmp_1 + tmp_2) % sizeof(int) != 0) {
-			tmp_2 += 1;
+		while ( (TMP_1 + TMP_2) % sizeof( int ) != 0 ) {
+			TMP_2 += 1;
 		}
 
-		tmp_3 = len - tmp_2; /* new len */
-		tmp_1 += tmp_2;
+		TMP_3 = LEN - TMP_2; /* new LEN */
+		TMP_1 += TMP_2;
 
-		printf("\n\nREMOVING\n");
-		printf("tmp_0: %02lx\n", tmp_0 - OFFSET);
-		printf("tmp_1: %02lx\n", tmp_1 - OFFSET);
-
-		while (tmp_1 != len) {
-			((char *)pBuffer)[tmp_0] = ((char *)pBuffer)[tmp_1];
-			tmp_0 += 1;
-			tmp_1 += 1;
+		while ( TMP_1 != LEN ) {
+			( (char *) pBuffer )[TMP_0] = ( (char *) pBuffer )[TMP_1];
+			TMP_0 += 1;
+			TMP_1 += 1;
 		}
-		len = tmp_3;
+		LEN = TMP_3;
 
-		ungrow();
+		Ungrow();
 	}
 }
 
-void searchPerson( void ) {
-	tmp_3 = len; /* base */
+void SearchPerson( void ) {
+	TMP_3 = LEN; /* base */
 
-	printf("digite um nome para buscar: ");
+	printf( "digite um nome para buscar: " );
 
 	for (;;) {
-		grow_byte();
-		((char *)pBuffer)[len] = fgetc(stdin);
-		len++;
-		if (((char *)pBuffer)[len - 1] == '\n') {
-			((char *)pBuffer)[len - 1] = '\0';
+		GrowByte();
+		( (char *) pBuffer )[LEN] = fgetc( stdin );
+		LEN++;
+		if ( ( (char *) pBuffer )[LEN - 1] == '\n' ) {
+			( (char *) pBuffer )[LEN - 1] = '\0';
 			break;
 		}
 	}
 
-	printf("procurando...\n");
+	printf( "procurando...\n" );
 
-	tmp_0 = 0;
-	tmp_1 = OFFSET;
-	tmp_2 = 0;
+	TMP_0 = 0;
+	TMP_1 = OFFSET;
+	TMP_2 = 0;
 
-	while (tmp_0 < person_n) {
+	while ( TMP_0 < PERSON_N ) {
 		/* alignment */
-		while (tmp_1 % sizeof(int) != 0) {
-			tmp_1++;
+		while ( TMP_1 % sizeof( int ) != 0 ) {
+			TMP_1++;
 		}
 
-		tmp_1 += sizeof(int);
+		TMP_1 += sizeof( int );
 
-		tmp_2 = 0;
+		TMP_2 = 0;
 		for (;;) {
-			if (((char *)pBuffer)[tmp_3 + tmp_2] != ((char *)pBuffer)[tmp_1 + tmp_2]) {
+			if ( ( (char *) pBuffer )[TMP_3 + TMP_2] != ( (char *) pBuffer )[TMP_1 + TMP_2] ) {
 				break;
 			}
-			if (((char *)pBuffer)[tmp_3 + tmp_2] == '\0') {
+			if ( ( (char *) pBuffer )[TMP_3 + TMP_2] == '\0' ) {
 				break;
 			}
-			tmp_2 += 1;
+			TMP_2 += 1;
 		}
 
-		if (((char *)pBuffer)[tmp_3 + tmp_2] == ((char *)pBuffer)[tmp_1 + tmp_2]) {
-			printf("uma pessoa foi achada:\n");
-			tmp_2 = tmp_1 - sizeof(int); /* age index */
-			tmp_1 += -6 + printf(
+		if ( ( (char *) pBuffer )[TMP_3 + TMP_2] == ( (char *) pBuffer )[TMP_1 + TMP_2] ) {
+			printf( "uma pessoa foi achada:\n" );
+			TMP_2 = TMP_1 - sizeof( int ); /* age index */
+			TMP_1 += -6 + printf(
 				"nome: %s\n",
-				&((char *)pBuffer)[tmp_1]
+				&( (char *) pBuffer )[TMP_1]
 			);
-			printf("idade: %d\n", *(int *)&((char *)pBuffer)[tmp_2]);
-			tmp_1 += -7 + printf(
+			printf( "idade: %d\n", *(int *)&( (char *) pBuffer )[TMP_2] );
+			TMP_1 += -7 + printf(
 				"email: %s\n",
-				&((char *)pBuffer)[tmp_1]
+				&( (char *) pBuffer )[TMP_1]
 			);
 			break;
 		} else {
 			/* not this one, skip it */
-			while (((char *)pBuffer)[tmp_1] != '\0') {
-				tmp_1 += 1;
+			while ( ( (char *) pBuffer )[TMP_1] != '\0' ) {
+				TMP_1 += 1;
 			}
-			tmp_1 += 1;
-			while (((char *)pBuffer)[tmp_1] != '\0') {
-				tmp_1 += 1;
+			TMP_1 += 1;
+			while ( ( (char *) pBuffer )[TMP_1] != '\0' ) {
+				TMP_1 += 1;
 			}
 		}
 
-		tmp_0 += 1;
+		TMP_0 += 1;
 	}
-	len = tmp_3;
+	LEN = TMP_3;
 }
 
-void listPeople( void ) {
-	tmp_0 = 0;
-	tmp_1 = OFFSET;
-	tmp_2 = 0;
+void ListPeople( void ) {
+	TMP_0 = 0;
+	TMP_1 = OFFSET;
+	TMP_2 = 0;
 
-	while (tmp_0 < person_n) {
+	while ( TMP_0 < PERSON_N ) {
 		/* alignment */
-		while (tmp_1 % sizeof(int) != 0) {
-			tmp_1++;
+		while ( TMP_1 % sizeof( int ) != 0 ) {
+			TMP_1++;
 		}
 
-		tmp_2 = tmp_1;
-		tmp_1 += sizeof(int);
+		TMP_2 = TMP_1;
+		TMP_1 += sizeof( int );
 
-		tmp_1 += -6 + printf(
+		TMP_1 += -6 + printf(
 			"nome: %s\n",
-			&((char *)pBuffer)[tmp_1]
+			&( (char *) pBuffer )[TMP_1]
 		);
 
 		printf(
 			"idade: %d\n",
-			*(int *)&((char *)pBuffer)[tmp_2]
+			*(int *)&( (char *) pBuffer )[TMP_2]
 		);
 
-		tmp_1 += -7 + printf(
+		TMP_1 += -7 + printf(
 			"email: %s\n",
-			&((char *)pBuffer)[tmp_1]
+			&( (char *) pBuffer )[TMP_1]
 		);
-		tmp_0 += 1;
+		TMP_0 += 1;
 	}
 }
 
-int main() {
-	pBuffer = malloc(8);
+int main( void ) {
+	pBuffer = malloc( 32 );
 
-	person_n = 0;
-	capacity = 8;
-	len = OFFSET;
-	tmp_0 = 0;
-	tmp_1 = 0;
-	tmp_2 = 0;
+	PERSON_N = 0;
+	CAPACITY = 32;
+	LEN = OFFSET;
+	TMP_0 = 0;
+	TMP_1 = 0;
+	TMP_2 = 0;
 
 	for (;;) {
-		printf("1. Adicionar Pessoa\n");
-		printf("2. Remover Pessoa\n");
-		printf("3. Buscar Pessoa\n");
-		printf("4. Listar Todos\n");
-		printf("5. Sair\n");
+		printf( "1. Adicionar Pessoa\n" );
+		printf( "2. Remover Pessoa\n" );
+		printf( "3. Buscar Pessoa\n" );
+		printf( "4. Listar Todos\n" );
+		printf( "5. Sair\n" );
 
-		scanf("%d", &tmp_0);
-		assert(fgetc(stdin) == '\n');
-		switch (tmp_0) {
+		scanf( "%d", &TMP_0 );
+		assert( fgetc( stdin ) == '\n' );
+		switch ( TMP_0 ) {
 			case 1:
-				addPerson();
+				AddPerson();
 				break;
 			case 2:
-				removePerson();
+				RemovePerson();
 				break;
 			case 3:
-				searchPerson();
+				SearchPerson();
 				break;
 			case 4:
-				listPeople();
+				ListPeople();
 				break;
 			case 5:
 				return 0;
@@ -325,39 +320,39 @@ int main() {
 				break;
 		}
 
-		printf("\n");
-		printf("OFFSET: %ld\n", OFFSET);
-		printf("len: %d\n", len);
+		printf( "\n" );
+		printf( "OFFSET: %ld\n", OFFSET );
+		printf( "LEN: %d\n", LEN );
 
-		printf("..  0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f\n");
+		printf( "..  0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f\n" );
 		int j = 1;
-		printf("00 ");
-		for (int i = OFFSET; i < capacity; i++) {
-			if (i >= len) {
-				printf("\x1b[37m");
-				printf("\x1b[41m");
-			} else if (((i / 4) % 2 == 0) ^ (i / 16 % 2 == 0)) {
-				printf("\x1b[30m");
-				printf("\x1b[47m");
+		printf( "00 " );
+		for ( int i = OFFSET; i < CAPACITY; i++ ) {
+			if ( i >= LEN ) {
+				printf( "\x1b[37m" );
+				printf( "\x1b[41m" );
+			} else if ( ( (i / 4) % 2 == 0 ) ^ ( i / 16 % 2 == 0 ) ) {
+				printf( "\x1b[30m" );
+				printf( "\x1b[47m" );
 			} else {
-				printf("\x1b[37m");
-				printf("\x1b[40m");
+				printf( "\x1b[37m" );
+				printf( "\x1b[40m" );
 			}
 
-			if (((char *)pBuffer)[i] < '!') {
-				printf("%02x", ((char *)pBuffer)[i]);
-				printf("\x1b[0m ");
+			if ( ( (char *) pBuffer )[i] < '!' ) {
+				printf( "%02x", ( (char *) pBuffer )[i] );
+				printf( "\x1b[0m " );
 			} else {
-				printf("_%c", ((char *)pBuffer)[i]);
-				printf("\x1b[0m ");
+				printf( "_%c", ( (char *) pBuffer )[i] );
+				printf( "\x1b[0m " );
 			}
 
-			if ((i - OFFSET) % 16 == 15) {
-				printf("\x1b[0m\n%02x ", j++);
+			if ( (i - OFFSET) % 16 == 15 ) {
+				printf( "\x1b[0m\n%02x ", j++ );
 			}
 		}
-		printf("\x1b[0m");
-		printf("\n\n");
+		printf( "\x1b[0m" );
+		printf( "\n\n" );
 	}
 	return 0;
 }
