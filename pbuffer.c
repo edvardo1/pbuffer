@@ -347,7 +347,7 @@ int main( void ) {
 			case 5:
 				return 0;
 			default:
-				printf("opcao invalida\n");
+				printf( "Opcao invalida\n" );
 				break;
 		}
 	}
