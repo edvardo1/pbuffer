@@ -305,8 +305,9 @@ void ListPeople( void ) {
 			"e-mail: %s\n",
 			&( (char *) pBuffer )[TMP_1]
 		);
-		TMP_0 += 1;
 		printf( "\n" );
+
+		TMP_0 += 1;
 	}
 }
 
