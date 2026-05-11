@@ -15,9 +15,14 @@
 void *pBuffer = NULL;
 
 void GrowInt( void ) {
-	if ( LEN + sizeof( int ) >= CAPACITY ) {
+	if ( ( int )( LEN + sizeof( int )) >= CAPACITY ) {
 		CAPACITY += GROWTH_ADDITIVE_FACTOR;
 		pBuffer = realloc( pBuffer, CAPACITY );
+
+		if ( pBuffer == NULL) {
+			printf("realloc fail\n");
+			exit(1);
+		}
 	}
 }
 
@@ -25,6 +30,11 @@ void GrowByte( void ) {
 	if ( LEN + 1 >= CAPACITY ) {
 		CAPACITY += GROWTH_ADDITIVE_FACTOR;
 		pBuffer = realloc( pBuffer, CAPACITY );
+
+		if ( pBuffer == NULL) {
+			printf("realloc fail\n");
+			exit(1);
+		}
 	}
 }
 
@@ -35,6 +45,11 @@ void Ungrow( void ) {
 	if ( TMP_1 < CAPACITY && LEN <= TMP_1 ) {
 		CAPACITY = TMP_1;
 		pBuffer = realloc( pBuffer, TMP_1 );
+
+		if ( pBuffer == NULL) {
+			printf("realloc fail\n");
+			exit(1);
+		}
 	}
 }
 
@@ -262,7 +277,6 @@ void SearchPerson( void ) {
 				TMP_1 += 1;
 			}
 			TMP_1 += 1;
-			printf("skipped: %lx\n", TMP_1 - OFFSET);
 		}
 	}
 
@@ -308,6 +322,11 @@ void ListPeople( void ) {
 int main( void ) {
 	pBuffer = malloc( 32 );
 
+	if ( pBuffer == NULL) {
+		printf("malloc fail\n");
+		exit(1);
+	}
+
 	PERSON_N = 0;
 	CAPACITY = 32;
 	LEN = OFFSET;
@@ -340,14 +359,13 @@ int main( void ) {
 				ListPeople();
 				break;
 			case 5:
+				free( pBuffer );
 				return 0;
 			default:
 				printf( "Opcao invalida\n" );
 				break;
 		}
 	}
-
-	free( pBuffer );
 
 	return 0;
 }
