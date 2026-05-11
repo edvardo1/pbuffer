@@ -278,11 +278,10 @@ void ListPeople( void ) {
 		return;
 	}
 
-	TMP_0 = 0;      /* person count */
 	TMP_1 = OFFSET; /* index of the value we are printing*/
 	TMP_2 = 0;      /* base index of the entry, used for printing the age. */
 
-	while ( TMP_0 < PERSON_N ) {
+	for ( TMP_0 = 0; TMP_0 < PERSON_N; TMP_0++ ) { /* TMP_0: person count */
 		/* alignment */
 		while ( TMP_1 % sizeof( int ) != 0 ) {
 			TMP_1++;
@@ -306,8 +305,6 @@ void ListPeople( void ) {
 			&( (char *) pBuffer )[TMP_1]
 		);
 		printf( "\n" );
-
-		TMP_0 += 1;
 	}
 }
 
