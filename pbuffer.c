@@ -10,7 +10,7 @@
 #define TMP_1    (((int *)pBuffer)[4])
 #define TMP_2    (((int *)pBuffer)[5])
 #define TMP_3    (((int *)pBuffer)[6])
-#define OFFSET  (8 * sizeof( int ))
+#define OFFSET  (7 * sizeof( int ))
 
 void *pBuffer = NULL;
 
@@ -29,7 +29,7 @@ void GrowByte( void ) {
 }
 
 void Ungrow( void ) {
-	TMP_1 = (LEN + GROWTH_ADDITIVE_FACTOR - 1);
+	TMP_1 = (LEN + GROWTH_ADDITIVE_FACTOR - 1); /* new capacity */
 	TMP_1 /= GROWTH_ADDITIVE_FACTOR;
 	TMP_1 *= GROWTH_ADDITIVE_FACTOR;
 	if ( TMP_1 < CAPACITY && LEN <= TMP_1 ) {
@@ -40,7 +40,7 @@ void Ungrow( void ) {
 
 void AddPerson( void ) {
 	PERSON_N++;
-	TMP_0 = LEN;
+	TMP_0 = LEN; /* index to the value we are currently modifying */
 
 	while ( TMP_0 % sizeof( int ) != 0 ) {
 		GrowByte();
@@ -48,7 +48,7 @@ void AddPerson( void ) {
 		LEN++;
 	}
 	GrowInt();
-	TMP_1 = TMP_0;
+	TMP_1 = TMP_0; /* base index, used for getting the person's age */
 
 	TMP_0 += sizeof( int );
 	LEN += sizeof( int );
@@ -85,7 +85,12 @@ void AddPerson( void ) {
 }
 
 void RemovePerson( void ) {
-	TMP_3 = LEN; /* base */
+	if ( PERSON_N <= 0 ) {
+		printf( "Nao e possivel remover uma pessoa de uma agenda vazia." );
+		return;
+	}
+
+	TMP_3 = LEN; /* offset of the name being searched */
 
 	printf( "Digite um nome para remover: " );
 
@@ -101,9 +106,9 @@ void RemovePerson( void ) {
 
 	printf( "Buscando...\n" );
 
-	TMP_0 = 0;
-	TMP_1 = OFFSET;
-	TMP_2 = 0;
+	TMP_0 = 0;      /* person count */
+	TMP_1 = OFFSET; /* index of the value we are comparing the name against */
+	TMP_2 = 0;      /* offset, used for indexing */
 
 	while ( TMP_0 < PERSON_N ) {
 		/* alignment */
@@ -125,7 +130,7 @@ void RemovePerson( void ) {
 		}
 
 		if ( ( (char *) pBuffer )[TMP_3 + TMP_2] == ( (char *) pBuffer )[TMP_1 + TMP_2] ) {
-			TMP_0 = 1;
+			TMP_0 = 1; /* found someone */
 			break;
 		} else {
 			/* not this one, skip it */
@@ -136,17 +141,19 @@ void RemovePerson( void ) {
 			while ( ( (char *) pBuffer )[TMP_1] != '\0' ) {
 				TMP_1 += 1;
 			}
+			TMP_1 += 1;
 		}
 
 		TMP_0 += 1;
 		if ( TMP_0 >= PERSON_N ) {
-			TMP_0 = 0;
+			TMP_0 = 0; /* didn't find anyone */
 			break;
 		}
 	}
-	LEN = TMP_3;
+	LEN = TMP_3; /* reset the length */
 
-	if ( TMP_0 ) { /* found someone */
+	if ( TMP_0 ) {
+		/* remove the person */
 		TMP_0 = TMP_1 - sizeof( int );
 		TMP_2 = 0;
 
@@ -157,32 +164,41 @@ void RemovePerson( void ) {
 		while ( ( (char *) pBuffer )[TMP_1 + TMP_2] != '\0' ) { /* skip e-mail */
 			TMP_2 += 1;
 		}
+		TMP_2 += 1;
 
 		/* alignment */
 		while ( (TMP_1 + TMP_2) % sizeof( int ) != 0 ) {
 			TMP_2 += 1;
 		}
 
-		TMP_3 = LEN - TMP_2; /* new LEN */
+		TMP_3 = LEN - TMP_2 - sizeof(int); /* new LEN */
 		TMP_1 += TMP_2;
 
+		/* 
+		 * TMP_0 index value being replaced
+		 * TMP_1 index of value replacing the value at TMP_0
+		 */
 		while ( TMP_1 != LEN ) {
 			( (char *) pBuffer )[TMP_0] = ( (char *) pBuffer )[TMP_1];
 			TMP_0 += 1;
 			TMP_1 += 1;
 		}
-		LEN = TMP_3;
-
-		Ungrow();
+		LEN = TMP_3; /* reset length */
 		PERSON_N--;
 
 		printf( "Uma pessoa foi achada e removida da agenda.\n" );
 	} else {
 		printf( "Nenhuma pessoa foi encontrada\n" );
 	}
+	Ungrow();
 }
 
 void SearchPerson( void ) {
+	if ( PERSON_N <= 0 ) {
+		printf( "Nao e possivel buscar uma pessoa em uma agenda vazia." );
+		return;
+	}
+
 	TMP_3 = LEN; /* base */
 
 	printf( "Digite um nome para buscar: " );
@@ -198,12 +214,13 @@ void SearchPerson( void ) {
 	}
 
 	LEN = TMP_3;
+	Ungrow();
 
 	printf( "Buscando...\n" );
 
-	TMP_0 = 0;
-	TMP_1 = OFFSET;
-	TMP_2 = 0;
+	TMP_0 = 0;      /* person count */
+	TMP_1 = OFFSET; /* index of the value we are comparing the name against */
+	TMP_2 = 0;      /* offset, used for indexing */
 
 	while ( TMP_0 < PERSON_N ) {
 		/* alignment */
@@ -245,6 +262,8 @@ void SearchPerson( void ) {
 			while ( ( (char *) pBuffer )[TMP_1] != '\0' ) {
 				TMP_1 += 1;
 			}
+			TMP_1 += 1;
+			printf("skipped: %lx\n", TMP_1 - OFFSET);
 		}
 
 		TMP_0 += 1;
@@ -254,9 +273,14 @@ void SearchPerson( void ) {
 }
 
 void ListPeople( void ) {
-	TMP_0 = 0;
-	TMP_1 = OFFSET;
-	TMP_2 = 0;
+	if ( PERSON_N <= 0 ) {
+		printf( "A agenda esta vazia." );
+		return;
+	}
+
+	TMP_0 = 0;      /* person count */
+	TMP_1 = OFFSET; /* index of the value we are printing*/
+	TMP_2 = 0;      /* base index of the entry, used for printing the age. */
 
 	while ( TMP_0 < PERSON_N ) {
 		/* alignment */
@@ -282,6 +306,7 @@ void ListPeople( void ) {
 			&( (char *) pBuffer )[TMP_1]
 		);
 		TMP_0 += 1;
+		printf( "\n" );
 	}
 }
 
@@ -291,11 +316,13 @@ int main( void ) {
 	PERSON_N = 0;
 	CAPACITY = 32;
 	LEN = OFFSET;
-	TMP_0 = 0;
-	TMP_1 = 0;
-	TMP_2 = 0;
 
 	for (;;) {
+		TMP_0 = 0;
+		TMP_1 = 0;
+		TMP_2 = 0;
+		TMP_3 = 0;
+
 		printf( "1. Adicionar Pessoa\n" );
 		printf( "2. Remover Pessoa\n" );
 		printf( "3. Buscar Pessoa\n" );
@@ -324,5 +351,8 @@ int main( void ) {
 				break;
 		}
 	}
+
+	free( pBuffer );
+
 	return 0;
 }
