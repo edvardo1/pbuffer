@@ -218,11 +218,10 @@ void SearchPerson( void ) {
 
 	printf( "Buscando...\n" );
 
-	TMP_0 = 0;      /* person count */
 	TMP_1 = OFFSET; /* index of the value we are comparing the name against */
 	TMP_2 = 0;      /* offset, used for indexing */
 
-	while ( TMP_0 < PERSON_N ) {
+	for ( TMP_0 = 0; TMP_0 < PERSON_N; TMP_0++ ) { /* TMP_0: person count */
 		/* alignment */
 		while ( TMP_1 % sizeof( int ) != 0 ) {
 			TMP_1++;
@@ -265,8 +264,6 @@ void SearchPerson( void ) {
 			TMP_1 += 1;
 			printf("skipped: %lx\n", TMP_1 - OFFSET);
 		}
-
-		TMP_0 += 1;
 	}
 
 	printf( "Nenhuma pessoa foi encontrada.\n" );
